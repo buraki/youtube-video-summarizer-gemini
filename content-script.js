@@ -378,6 +378,9 @@
                   <option value="fr">Français (French)</option>
                   <option value="ru">Русский (Russian)</option>
                   <option value="pt">Português (Portuguese)</option>
+                  <option value="zh">中文 (Chinese)</option>
+                  <option value="ja">日本語 (Japanese)</option>
+                  <option value="ko">한국어 (Korean)</option>
                 </select>
               </div>
             </div>
@@ -1056,7 +1059,10 @@
         de: "Stellen Sie eine Frage zu diesem Video...",
         fr: "Posez une question sur cette vidéo...",
         ru: "Задайте вопрос об этом видео...",
-        pt: "Faça uma pergunta sobre este vídeo..."
+        pt: "Faça uma pergunta sobre este vídeo...",
+        zh: "针对此视频提问...",
+        ja: "この動画について質問する...",
+        ko: "이 동영상에 대해 질문하기..."
       };
       qaInput.placeholder = placeholders[currentLanguage] || placeholders.en;
     }
@@ -1069,7 +1075,10 @@
         de: "Frage zum Video stellen",
         fr: "Poser une question",
         ru: "Задать вопрос по видео",
-        pt: "Fazer uma pergunta"
+        pt: "Fazer uma pergunta",
+        zh: "视频提问",
+        ja: "動画への質問",
+        ko: "동영상 질문"
       };
       qaHeaderText.textContent = headers[currentLanguage] || headers.en;
     }

@@ -59,7 +59,10 @@ function getLanguageName(langCode) {
     de: 'German (Deutsch)',
     fr: 'French (Français)',
     ru: 'Russian (Русский)',
-    pt: 'Portuguese (Português)'
+    pt: 'Portuguese (Português)',
+    zh: 'Chinese (中文)',
+    ja: 'Japanese (日本語)',
+    ko: 'Korean (한국어)'
   };
   return languages[langCode] || 'English';
 }
