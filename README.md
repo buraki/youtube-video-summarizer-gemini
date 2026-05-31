@@ -4,7 +4,13 @@
 [![Gemini](https://img.shields.io/badge/Powered%20By-Google%20Gemini%201.5%20Flash-purple.svg)](https://deepmind.google/technologies/gemini/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
+<p align="center">
+  <img src="screenshots/full_watch_page.png" alt="Gemini YouTube Summarizer Desktop Preview" width="800" />
+</p>
+
 A premium, high-fidelity Google Chrome extension that injects a **"Summarize with Gemini"** tool directly into YouTube's native UI. Grasp core video insights instantly in a beautiful glassmorphic slide-over panel, and ask conversational, context-aware Q&A follow-up questions about the entire video without leaving your screen.
+
+### 📸 Feature Breakdown
 
 <p align="center">
   <img src="screenshots/menu_injection.png" alt="YouTube Native Menu Injection" width="280" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
