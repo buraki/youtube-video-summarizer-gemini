@@ -18,6 +18,8 @@ Perfect for students, researchers, professionals, and busy learners who want to 
 FEATURES:
 - Native Integration: The "Summarize with Gemini" option integrates directly into YouTube's native 3-dots menu on video cards (homepage, subscriptions, search, etc.) and player controls.
 - Glassmorphic Sidebar: A beautiful slide-over translucent panel displays summaries without disrupting your browsing context.
+- Interactive Conversational Q&A: Ask questions directly about the video context, especially on details not included in the summary. Ask follow-up queries with full context preservation and conversational state memory.
+- Perfect YouTube Typography: Beautifully styled with `"Roboto"` and `"YouTube Sans"`, matching YouTube's exact text sizing, line heights, and neutral light-theme colors.
 - Progress Tracker: Real-time visual steps showing you when video details are read, captions are processed, and Gemini is compiling.
 - Multi-lingual Support: Instantly switch and generate summaries in Turkish, English, Spanish, German, French, Russian, and Portuguese.
 - Fallback Capability: For videos without captions/transcripts (music or disabled settings), the AI compiles a summary using video descriptions, tags, and metadata.
@@ -27,7 +29,7 @@ HOW TO USE IT:
 1. Load the extension and click its toolbar icon to input your free Gemini API Key (obtained from Google AI Studio).
 2. Browse YouTube and click the 3-dots menu button on any video thumbnail or card.
 3. Select "Summarize with Gemini".
-4. The premium sidebar panel will slide in from the right and begin displaying the summary in your chosen language!
+4. The premium sidebar panel will slide in from the right, display the summary, and let you ask conversational follow-up questions at the bottom!
 
 PRIVACY NOTE:
 We value your privacy. The extension runs entirely client-side. Your Gemini API key is stored securely in your local browser sync storage and is only ever sent directly to Google's official Gemini API servers. No user details, search history, or video interactions are collected, monitored, or transmitted to any third-party servers.
