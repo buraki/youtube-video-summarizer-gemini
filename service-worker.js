@@ -26,6 +26,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     })();
     
     return true; // Keeps the message channel open for async response
+  } else if (message.type === 'ASK_QUESTION') {
+    (async () => {
+      try {
+        const { geminiApiKey } = await chrome.storage.sync.get('geminiApiKey');
+        
+        if (!geminiApiKey) {
+          sendResponse({ success: false, error: 'NO_API_KEY' });
+          return;
+        }
+
+        const { videoContext, chatHistory, newQuestion, languageCode } = message;
+        const resultText = await callGeminiChatApi(geminiApiKey, videoContext, chatHistory, newQuestion, languageCode);
+        
+        sendResponse({ success: true, answer: resultText });
+      } catch (err) {
+        console.error('Error answering question in service worker:', err);
+        sendResponse({ success: false, error: err.message || 'UNKNOWN_ERROR' });
+      }
+    })();
+    
+    return true; // Keeps the message channel open for async response
   }
 });
 
@@ -206,4 +227,104 @@ async function resolveBestAvailableModel(apiKey) {
   
   // Preference 4: The first eligible model in the list
   return eligibleModels[0].name;
+}
+
+// Make the fetch call to Gemini API for a chat turn with full context and history
+async function callGeminiChatApi(apiKey, videoContext, chatHistory, newQuestion, languageCode, modelOverride = null) {
+  const modelName = modelOverride || 'models/gemini-1.5-flash';
+  const endpoint = `https://generativelanguage.googleapis.com/v1/${modelName}:generateContent?key=${apiKey}`;
+  
+  const targetLanguage = getLanguageName(languageCode);
+  
+  // Create system instructions or initial context
+  const systemInstruction = `You are a helpful assistant specialized in answering questions about the following YouTube video.
+Use the provided video details and transcript to answer any questions precisely.
+If the answer cannot be found in the video transcript or metadata, use your general knowledge to give a helpful and relevant answer, but mention that it is not explicitly discussed in the video.
+You MUST write all your responses ENTIRELY in ${targetLanguage}!
+Keep your answers clear, informative, and reasonably concise, matching the structure of a premium chat interface.`;
+
+  // Start building the contents array
+  const contents = [];
+  
+  // 1. First turn: Initial context and system instructions
+  contents.push({
+    role: 'user',
+    parts: [{ text: `${systemInstruction}\n\nHere is the video info:\nTitle: ${videoContext.title}\nChannel: ${videoContext.channel}\n\nTranscript / Metadata:\n${videoContext.transcript}` }]
+  });
+  
+  contents.push({
+    role: 'model',
+    parts: [{ text: `Understood! I have read the video details and transcript. I will answer all your questions about this video in ${targetLanguage}. Please ask your question.` }]
+  });
+  
+  // 2. Append existing chat history
+  if (chatHistory && chatHistory.length > 0) {
+    for (const turn of chatHistory) {
+      contents.push({
+        role: turn.role, // 'user' or 'model'
+        parts: [{ text: turn.text }]
+      });
+    }
+  }
+  
+  // 3. Append the new user question
+  contents.push({
+    role: 'user',
+    parts: [{ text: newQuestion }]
+  });
+
+  const payload = {
+    contents: contents,
+    generationConfig: {
+      temperature: 0.3,
+      topP: 0.8,
+      topK: 40
+    }
+  };
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const message = errorData.error?.message || `HTTP error! Status: ${response.status}`;
+      
+      if (response.status === 404 || message.includes('not found') || message.includes('not supported')) {
+        const customErr = new Error(message);
+        customErr.isModelError = true;
+        throw customErr;
+      }
+      throw new Error(message);
+    }
+
+    const responseData = await response.json();
+    const candidate = responseData.candidates?.[0];
+    const text = candidate?.content?.parts?.[0]?.text;
+    
+    if (!text) {
+      throw new Error('Gemini did not return any text.');
+    }
+
+    return text;
+
+  } catch (err) {
+    if (err.isModelError && !modelOverride) {
+      console.warn('[Gemini SW] Primary model not found during chat. Running self-healing fallback...');
+      try {
+        const fallbackModel = await resolveBestAvailableModel(apiKey);
+        if (fallbackModel) {
+          return await callGeminiChatApi(apiKey, videoContext, chatHistory, newQuestion, languageCode, fallbackModel);
+        }
+      } catch (fallbackErr) {
+        console.error('[Gemini SW] Self-healing resolution failed during chat:', fallbackErr);
+      }
+    }
+    throw err;
+  }
 }

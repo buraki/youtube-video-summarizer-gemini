@@ -5,6 +5,10 @@
   let sidebarPanel = null;
   let currentLanguage = 'en'; // Default fallback, will sync with storage
   let popupObserverAttached = false;
+  
+  // Q&A Thread State
+  let activeVideoContext = null;
+  let activeChatHistory = [];
 
   // Initialize the script
   init();
@@ -399,6 +403,31 @@
           <!-- Summary TextBox / Content -->
           <div class="gemini-summary-box hidden" id="gemini-summary-box">
             <div class="gemini-summary-content" id="gemini-summary-content"></div>
+            
+            <!-- Interactive Q&A Section -->
+            <div class="gemini-qa-section" id="gemini-qa-section">
+              <div class="gemini-qa-divider"></div>
+              <h4 class="gemini-qa-header">
+                <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Videoya Soru Sor
+              </h4>
+              
+              <!-- Q&A Thread Container -->
+              <div class="gemini-qa-thread" id="gemini-qa-thread"></div>
+              
+              <!-- Q&A Input Container -->
+              <div class="gemini-qa-input-container">
+                <textarea class="gemini-qa-input" id="gemini-qa-input" placeholder="Video hakkında bir soru sorun..." rows="1"></textarea>
+                <button class="gemini-qa-send-btn" id="gemini-qa-send-btn" title="Soruyu Gönder">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       `;
@@ -425,6 +454,26 @@
           performSummarization(videoId, lastClickedVideoUrl || window.location.href);
         }
       });
+
+      // Q&A listeners
+      const qaInput = document.getElementById('gemini-qa-input');
+      const qaSendBtn = document.getElementById('gemini-qa-send-btn');
+      
+      if (qaInput && qaSendBtn) {
+        qaSendBtn.addEventListener('click', handleSendQuestion);
+        qaInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendQuestion();
+          }
+        });
+        
+        // Auto-expanding textarea height based on content
+        qaInput.addEventListener('input', () => {
+          qaInput.style.height = 'auto';
+          qaInput.style.height = Math.min(qaInput.scrollHeight, 70) + 'px';
+        });
+      }
     }
 
     // Sync selected language with UI
@@ -498,6 +547,16 @@
 
       updateProgressStep('step-transcript', 'done');
       updateProgressStep('step-ai', 'loading');
+
+      // Populate active video context for Q&A thread
+      activeVideoContext = {
+        title: title,
+        description: description,
+        channel: channel,
+        transcript: transcriptText || `(Transcript unavailable. Fallback to video metadata description: Channel: ${channel}, Title: ${title}, Description: ${description})`,
+        isFallback: isFallback
+      };
+      activeChatHistory = []; // Reset Q&A thread history for the new video
 
       // Step 3: Send message to background service-worker to summarize via Gemini API
       chrome.runtime.sendMessage({
@@ -781,11 +840,28 @@
 
   // Reset UI components to fresh loading state
   function resetSidebarUI() {
+    activeVideoContext = null;
+    activeChatHistory = [];
+
     document.getElementById('gemini-status-area').classList.remove('hidden');
     document.getElementById('gemini-summary-box').classList.add('hidden');
     document.getElementById('gemini-actions').classList.add('hidden');
     document.getElementById('gemini-summary-content').innerHTML = '';
     
+    // Clear Q&A thread list
+    const qaThread = document.getElementById('gemini-qa-thread');
+    if (qaThread) qaThread.innerHTML = '';
+    
+    const qaInput = document.getElementById('gemini-qa-input');
+    if (qaInput) {
+      qaInput.value = '';
+      qaInput.style.height = '20px';
+      qaInput.disabled = false;
+    }
+    
+    const qaSendBtn = document.getElementById('gemini-qa-send-btn');
+    if (qaSendBtn) qaSendBtn.disabled = false;
+
     // Reset video info labels
     document.getElementById('gemini-video-title').textContent = 'Loading video details...';
     document.getElementById('gemini-video-channel').textContent = '';
@@ -846,5 +922,121 @@
     } catch (err) {
       console.error('Clipboard copy failed:', err);
     }
+  }
+
+  // Handle Q&A send action
+  async function handleSendQuestion() {
+    const qaInput = document.getElementById('gemini-qa-input');
+    const qaSendBtn = document.getElementById('gemini-qa-send-btn');
+    const qaThread = document.getElementById('gemini-qa-thread');
+    const summaryBox = document.getElementById('gemini-summary-box');
+    
+    if (!qaInput || !qaSendBtn || !qaThread) return;
+    
+    const question = qaInput.value.trim();
+    if (!question) return;
+    
+    // Disable inputs
+    qaInput.disabled = true;
+    qaSendBtn.disabled = true;
+    
+    // Append user question
+    const turnDiv = document.createElement('div');
+    turnDiv.className = 'qa-turn';
+    
+    const questionBubble = document.createElement('div');
+    questionBubble.className = 'qa-question-bubble';
+    questionBubble.innerHTML = `
+      <div class="qa-bubble-header">
+        <span class="qa-badge user">Soru</span>
+      </div>
+      <div class="qa-bubble-body">${escapeHtml(question)}</div>
+    `;
+    turnDiv.appendChild(questionBubble);
+    qaThread.appendChild(turnDiv);
+    
+    // Clear input and reset height
+    qaInput.value = '';
+    qaInput.style.height = '20px';
+    
+    // Add loading bubble inside the turn
+    const loadingBubble = document.createElement('div');
+    loadingBubble.className = 'qa-loading-bubble';
+    loadingBubble.innerHTML = `
+      <div class="qa-loading-dot"></div>
+      <div class="qa-loading-dot"></div>
+      <div class="qa-loading-dot"></div>
+    `;
+    turnDiv.appendChild(loadingBubble);
+    
+    // Scroll to bottom
+    summaryBox.scrollTop = summaryBox.scrollHeight;
+    
+    // Send to background
+    chrome.runtime.sendMessage({
+      type: 'ASK_QUESTION',
+      videoContext: activeVideoContext,
+      chatHistory: activeChatHistory,
+      newQuestion: question,
+      languageCode: currentLanguage
+    }, (response) => {
+      // Re-enable inputs
+      qaInput.disabled = false;
+      qaSendBtn.disabled = false;
+      qaInput.focus();
+      
+      // Remove loading bubble
+      loadingBubble.remove();
+      
+      if (chrome.runtime.lastError) {
+        appendAnswerError(turnDiv, `Hata: ${chrome.runtime.lastError.message}`);
+        return;
+      }
+      
+      if (response && response.success) {
+        const answerBubble = document.createElement('div');
+        answerBubble.className = 'qa-answer-bubble';
+        answerBubble.innerHTML = `
+          <div class="qa-bubble-header">
+            <span class="qa-badge model">Gemini</span>
+          </div>
+          <div class="qa-bubble-body">${renderMarkdown(response.answer)}</div>
+        `;
+        turnDiv.appendChild(answerBubble);
+        
+        // Save to state history
+        activeChatHistory.push({ role: 'user', text: question });
+        activeChatHistory.push({ role: 'model', text: response.answer });
+      } else {
+        const errorMsg = response?.error || 'UNKNOWN_ERROR';
+        appendAnswerError(turnDiv, `Hata: ${errorMsg}`);
+      }
+      
+      // Scroll to bottom after answer renders
+      setTimeout(() => {
+        summaryBox.scrollTop = summaryBox.scrollHeight;
+      }, 50);
+    });
+  }
+
+  function appendAnswerError(parentDiv, errorText) {
+    const errorBubble = document.createElement('div');
+    errorBubble.className = 'qa-answer-bubble';
+    errorBubble.innerHTML = `
+      <div class="qa-bubble-header">
+        <span class="qa-badge model" style="color: var(--gemini-error);">Hata</span>
+      </div>
+      <div class="qa-bubble-body" style="color: var(--gemini-error);">${escapeHtml(errorText)}</div>
+    `;
+    parentDiv.appendChild(errorBubble);
+  }
+
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 })();
