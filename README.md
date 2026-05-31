@@ -7,7 +7,8 @@
 A premium, high-fidelity Google Chrome extension that injects a **"Summarize with Gemini"** tool directly into YouTube's native UI. Grasp core video insights instantly in a beautiful glassmorphic slide-over panel, and ask conversational, context-aware Q&A follow-up questions about the entire video without leaving your screen.
 
 <p align="center">
-  <img src="screenshots/menu_injection.png" alt="YouTube Native Menu Injection" width="300" />
+  <img src="screenshots/menu_injection.png" alt="YouTube Native Menu Injection" width="280" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="screenshots/sidebar_summary.png" alt="Gemini Sidebar Summary Panel" width="280" />
 </p>
 
 ---
