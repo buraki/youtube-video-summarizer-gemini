@@ -1,0 +1,448 @@
+/* Beautiful Glassmorphic Sidebar styles */
+
+:root {
+  --gemini-bg: rgba(255, 255, 255, 0.96);
+  --gemini-glass-bg: rgba(0, 0, 0, 0.03);
+  --gemini-border: rgba(0, 0, 0, 0.08);
+  --gemini-border-glow: rgba(6, 95, 212, 0.2); /* YouTube standard blue highlight color is #065fd4 */
+  
+  --gemini-text: #0f0f0f; /* Native YouTube light theme text */
+  --gemini-text-secondary: #606060; /* Native YouTube secondary text */
+  --gemini-text-muted: #909090; /* Native YouTube tertiary/muted text */
+  
+  --gemini-blue: #065fd4; /* Native YouTube interactive blue */
+  --gemini-purple: #7a1fa2;
+  --gemini-success: #2ba640; /* Soft beautiful green */
+  --gemini-error: #cc0000; /* YouTube branding error red */
+  
+  --gemini-gradient: linear-gradient(135deg, #065fd4 0%, #7a1fa2 100%);
+  --gemini-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --gemini-shadow: -4px 0 24px rgba(0, 0, 0, 0.08), 0 0 12px rgba(0, 0, 0, 0.02);
+}
+
+.gemini-sidebar {
+  position: fixed;
+  top: 0;
+  right: -380px; /* Initially hidden */
+  width: 360px;
+  height: 100vh;
+  z-index: 9999; /* Higher than YouTube's overlay indices */
+  transition: var(--gemini-transition);
+  box-shadow: var(--gemini-shadow);
+  display: flex;
+  font-family: "Roboto", "Arial", sans-serif;
+  color: var(--gemini-text);
+  overflow: hidden;
+}
+
+.gemini-sidebar.visible {
+  right: 0;
+}
+
+/* Glassmorphism background */
+.gemini-sidebar-glass {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--gemini-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-left: 1px solid var(--gemini-border);
+  z-index: -1;
+}
+
+.gemini-sidebar-content {
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+/* Header layout */
+.gemini-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--gemini-border);
+  padding-bottom: 16px;
+}
+
+.gemini-header-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sparkle-logo {
+  width: 22px;
+  height: 22px;
+  animation: sidebarFloat 4s ease-in-out infinite;
+}
+
+.gemini-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  font-family: "YouTube Sans", "Roboto", "Arial", sans-serif;
+  background: var(--gemini-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+.gemini-close-btn {
+  background: none;
+  border: none;
+  color: var(--gemini-text-secondary);
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--gemini-transition);
+}
+
+.gemini-close-btn:hover {
+  color: var(--gemini-text);
+  background-color: var(--gemini-glass-bg);
+  transform: rotate(90deg);
+}
+
+/* Video Information Card */
+.gemini-video-info {
+  background-color: var(--gemini-glass-bg);
+  border: 1px solid var(--gemini-border);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.gemini-video-info h3 {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  margin: 0 0 6px 0;
+  color: var(--gemini-text);
+  font-family: "Roboto", "Arial", sans-serif;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.gemini-video-info p {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--gemini-text-secondary);
+  font-family: "Roboto", "Arial", sans-serif;
+  margin: 0;
+}
+
+/* Progress Status Feed */
+.gemini-status-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 40px 0;
+}
+
+.status-spinner-container {
+  position: relative;
+  width: 50px;
+  height: 50px;
+}
+
+.status-spinner {
+  width: 100%;
+  height: 100%;
+  border: 3px solid rgba(0, 0, 0, 0.04);
+  border-radius: 50%;
+  border-top-color: var(--gemini-blue);
+  border-bottom-color: var(--gemini-purple);
+  animation: sidebarSpin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+.status-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(161, 66, 244, 0.2);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.status-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 80%;
+}
+
+.status-step {
+  font-size: 13px;
+  font-family: "Roboto", "Arial", sans-serif;
+  color: var(--gemini-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: var(--gemini-transition);
+}
+
+.status-step::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--gemini-text-muted);
+  transition: var(--gemini-transition);
+}
+
+.status-step.active {
+  color: var(--gemini-blue);
+  text-shadow: 0 0 8px rgba(138, 180, 248, 0.3);
+}
+
+.status-step.active::before {
+  background-color: var(--gemini-blue);
+  box-shadow: 0 0 8px var(--gemini-blue);
+  animation: pulse 1.5s infinite;
+}
+
+.status-step.completed {
+  color: var(--gemini-success);
+}
+
+.status-step.completed::before {
+  background-color: var(--gemini-success);
+  box-shadow: none;
+}
+
+/* Interactive Action & Toolbar area */
+.gemini-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--gemini-border);
+  padding-bottom: 12px;
+}
+
+.gemini-lang-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gemini-lang-selector label {
+  font-size: 12px;
+  font-family: "Roboto", "Arial", sans-serif;
+  color: var(--gemini-text-secondary);
+}
+
+.gemini-select-wrapper {
+  position: relative;
+}
+
+.gemini-select-wrapper select {
+  background-color: var(--gemini-glass-bg);
+  border: 1px solid var(--gemini-border);
+  border-radius: 6px;
+  color: var(--gemini-text);
+  padding: 6px 20px 6px 8px;
+  font-size: 12px;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  font-family: "Roboto", "Arial", sans-serif;
+  transition: var(--gemini-transition);
+}
+
+.gemini-select-wrapper select:focus {
+  border-color: var(--gemini-border-glow);
+}
+
+.gemini-select-wrapper::after {
+  content: '';
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-70%) rotate(45deg);
+  width: 5px;
+  height: 5px;
+  border-right: 1px solid var(--gemini-text-secondary);
+  border-bottom: 1px solid var(--gemini-text-secondary);
+  pointer-events: none;
+}
+
+.gemini-toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.gemini-action-btn {
+  background-color: var(--gemini-glass-bg);
+  border: 1px solid var(--gemini-border);
+  border-radius: 6px;
+  color: var(--gemini-text-secondary);
+  padding: 6px 10px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: var(--gemini-transition);
+  font-family: "Roboto", "Arial", sans-serif;
+  font-weight: 500;
+}
+
+.gemini-action-btn:hover {
+  color: var(--gemini-text);
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.gemini-action-btn.success {
+  background-color: rgba(129, 201, 149, 0.1);
+  color: var(--gemini-success);
+  border-color: rgba(129, 201, 149, 0.2);
+}
+
+.icon-svg {
+  width: 14px;
+  height: 14px;
+  transition: var(--gemini-transition);
+}
+
+/* Summary TextBox layout */
+.gemini-summary-box {
+  flex: 1;
+  overflow-y: auto;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--gemini-border);
+  padding: 16px;
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbars */
+.gemini-summary-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+.gemini-summary-box::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.gemini-summary-box::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+}
+
+.gemini-summary-box::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.16);
+}
+
+/* Markdown styling inside Summary content */
+.gemini-summary-content {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  font-family: "Roboto", "Arial", sans-serif;
+  color: var(--gemini-text);
+}
+
+.gemini-summary-content p {
+  margin: 0 0 14px 0;
+}
+
+.gemini-summary-content h4 {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "YouTube Sans", "Roboto", "Arial", sans-serif;
+  color: var(--gemini-text);
+  margin: 20px 0 10px 0;
+  letter-spacing: 0.1px;
+}
+
+.gemini-summary-content h4:first-of-type {
+  margin-top: 0;
+}
+
+.gemini-summary-content ul {
+  margin: 0 0 16px 0;
+  padding-left: 18px;
+}
+
+.gemini-summary-content li {
+  margin-bottom: 8px;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.gemini-summary-content li::marker {
+  color: var(--gemini-blue);
+}
+
+.gemini-summary-content strong {
+  font-weight: 600;
+  color: var(--gemini-text);
+}
+
+/* Error Card style */
+.gemini-error-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px 10px;
+  color: var(--gemini-error);
+  gap: 12px;
+}
+
+.gemini-error-card svg {
+  animation: pulse 2s infinite;
+}
+
+.gemini-error-card p {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Animations */
+@keyframes sidebarFloat {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(10deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes sidebarSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 0.6; }
+}
