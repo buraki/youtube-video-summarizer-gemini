@@ -440,6 +440,7 @@
       const langSelect = document.getElementById('gemini-lang-select');
       langSelect.addEventListener('change', (e) => {
         currentLanguage = e.target.value;
+        updateQaInputPlaceholder();
         // Trigger a regeneration in the new language
         const videoId = extractVideoId(lastClickedVideoUrl || window.location.href);
         if (videoId) {
@@ -478,6 +479,7 @@
 
     // Sync selected language with UI
     document.getElementById('gemini-lang-select').value = currentLanguage;
+    updateQaInputPlaceholder();
 
     // Show with animation
     sidebarPanel.classList.add('visible');
@@ -857,6 +859,7 @@
       qaInput.value = '';
       qaInput.style.height = '20px';
       qaInput.disabled = false;
+      updateQaInputPlaceholder();
     }
     
     const qaSendBtn = document.getElementById('gemini-qa-send-btn');
@@ -1038,5 +1041,23 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
+  }
+
+  // Updates the placeholder text of the Q&A input box based on selected language
+  function updateQaInputPlaceholder() {
+    const qaInput = document.getElementById('gemini-qa-input');
+    if (!qaInput) return;
+    
+    const placeholders = {
+      en: "Ask a question about this video...",
+      tr: "Bu video hakkında bir soru sorun...",
+      es: "Haz una pregunta sobre este video...",
+      de: "Stellen Sie eine Frage zu diesem Video...",
+      fr: "Posez une question sur cette vidéo...",
+      ru: "Задайте вопрос об этом видео...",
+      pt: "Faça uma pergunta sobre este vídeo..."
+    };
+    
+    qaInput.placeholder = placeholders[currentLanguage] || placeholders.en;
   }
 })();
