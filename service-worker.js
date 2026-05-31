@@ -119,7 +119,7 @@ Provide a powerful, 1-2 sentence concluding synthesis of the video's overall mes
 }
 
 // Make the fetch call to Gemini API with dynamic self-healing fallback support
-async function callGeminiApi(apiKey, prompt, modelOverride = null) {
+async function callGeminiApi(apiKey, prompt, modelOverride = null, fallbackAttempt = 0) {
   const modelName = modelOverride || 'models/gemini-1.5-flash';
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${apiKey}`;
   
@@ -156,7 +156,7 @@ async function callGeminiApi(apiKey, prompt, modelOverride = null) {
       const message = errorData.error?.message || `HTTP error! Status: ${response.status}`;
       
       // If the model is not found or supported, throw a specific error type to trigger self-healing
-      if (response.status === 404 || message.includes('not found') || message.includes('not supported')) {
+      if (response.status === 404 || response.status === 400 || message.includes('not found') || message.includes('not supported')) {
         const customErr = new Error(message);
         customErr.isModelError = true;
         throw customErr;
@@ -175,18 +175,49 @@ async function callGeminiApi(apiKey, prompt, modelOverride = null) {
     return text;
 
   } catch (err) {
-    // If it's a model-not-found/supported error and we haven't already performed a self-healing fallback
-    if (err.isModelError && !modelOverride) {
-      console.warn('[Gemini SW] Primary model not found. Running self-healing catalog check...');
+    if (err.isModelError) {
+      const hardcodedFallbacks = [
+        'models/gemini-1.5-flash-latest',
+        'models/gemini-1.5-flash',
+        'models/gemini-1.5-flash-002',
+        'models/gemini-2.0-flash',
+        'models/gemini-2.5-flash',
+        'models/gemini-1.5-pro',
+        'models/gemini-1.5-pro-latest'
+      ];
       
-      try {
-        const fallbackModel = await resolveBestAvailableModel(apiKey);
-        if (fallbackModel) {
-          console.log(`[Gemini SW] Self-healing success! Retrying summarization with best available model: ${fallbackModel}`);
-          return await callGeminiApi(apiKey, prompt, fallbackModel);
+      const currentAttemptIndex = hardcodedFallbacks.indexOf(modelName);
+      let nextAttemptIndex = currentAttemptIndex + 1;
+      
+      if (currentAttemptIndex === -1) {
+        nextAttemptIndex = 0;
+      }
+      
+      if (nextAttemptIndex < hardcodedFallbacks.length) {
+        const nextModel = hardcodedFallbacks[nextAttemptIndex];
+        if (nextModel === modelName) {
+          nextAttemptIndex++;
         }
-      } catch (fallbackErr) {
-        console.error('[Gemini SW] Self-healing resolution failed:', fallbackErr);
+        
+        if (nextAttemptIndex < hardcodedFallbacks.length) {
+          const actualNextModel = hardcodedFallbacks[nextAttemptIndex];
+          console.warn(`[Gemini SW] Model ${modelName} failed. Trying hardcoded fallback: ${actualNextModel}`);
+          return await callGeminiApi(apiKey, prompt, actualNextModel);
+        }
+      }
+      
+      // Dynamic fallback list final resort
+      if (fallbackAttempt === 0) {
+        console.warn('[Gemini SW] Hardcoded fallbacks exhausted or skipped. Running self-healing catalog check...');
+        try {
+          const fallbackModel = await resolveBestAvailableModel(apiKey);
+          if (fallbackModel && fallbackModel !== modelName) {
+            console.log(`[Gemini SW] Catalog resolution success! Retrying with: ${fallbackModel}`);
+            return await callGeminiApi(apiKey, prompt, fallbackModel, 1);
+          }
+        } catch (fallbackErr) {
+          console.error('[Gemini SW] Catalog self-healing failed:', fallbackErr);
+        }
       }
     }
     
@@ -233,7 +264,7 @@ async function resolveBestAvailableModel(apiKey) {
 }
 
 // Make the fetch call to Gemini API for a chat turn with full context and history
-async function callGeminiChatApi(apiKey, videoContext, chatHistory, newQuestion, languageCode, modelOverride = null) {
+async function callGeminiChatApi(apiKey, videoContext, chatHistory, newQuestion, languageCode, modelOverride = null, fallbackAttempt = 0) {
   const modelName = modelOverride || 'models/gemini-1.5-flash';
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${apiKey}`;
   
@@ -298,7 +329,7 @@ Keep your answers clear, informative, and reasonably concise, matching the struc
       const errorData = await response.json().catch(() => ({}));
       const message = errorData.error?.message || `HTTP error! Status: ${response.status}`;
       
-      if (response.status === 404 || message.includes('not found') || message.includes('not supported')) {
+      if (response.status === 404 || response.status === 400 || message.includes('not found') || message.includes('not supported')) {
         const customErr = new Error(message);
         customErr.isModelError = true;
         throw customErr;
@@ -317,15 +348,48 @@ Keep your answers clear, informative, and reasonably concise, matching the struc
     return text;
 
   } catch (err) {
-    if (err.isModelError && !modelOverride) {
-      console.warn('[Gemini SW] Primary model not found during chat. Running self-healing fallback...');
-      try {
-        const fallbackModel = await resolveBestAvailableModel(apiKey);
-        if (fallbackModel) {
-          return await callGeminiChatApi(apiKey, videoContext, chatHistory, newQuestion, languageCode, fallbackModel);
+    if (err.isModelError) {
+      const hardcodedFallbacks = [
+        'models/gemini-1.5-flash-latest',
+        'models/gemini-1.5-flash',
+        'models/gemini-1.5-flash-002',
+        'models/gemini-2.0-flash',
+        'models/gemini-2.5-flash',
+        'models/gemini-1.5-pro',
+        'models/gemini-1.5-pro-latest'
+      ];
+      
+      const currentAttemptIndex = hardcodedFallbacks.indexOf(modelName);
+      let nextAttemptIndex = currentAttemptIndex + 1;
+      
+      if (currentAttemptIndex === -1) {
+        nextAttemptIndex = 0;
+      }
+      
+      if (nextAttemptIndex < hardcodedFallbacks.length) {
+        const nextModel = hardcodedFallbacks[nextAttemptIndex];
+        if (nextModel === modelName) {
+          nextAttemptIndex++;
         }
-      } catch (fallbackErr) {
-        console.error('[Gemini SW] Self-healing resolution failed during chat:', fallbackErr);
+        
+        if (nextAttemptIndex < hardcodedFallbacks.length) {
+          const actualNextModel = hardcodedFallbacks[nextAttemptIndex];
+          console.warn(`[Gemini SW] Model ${modelName} failed during chat. Trying hardcoded fallback: ${actualNextModel}`);
+          return await callGeminiChatApi(apiKey, videoContext, chatHistory, newQuestion, languageCode, actualNextModel);
+        }
+      }
+      
+      if (fallbackAttempt === 0) {
+        console.warn('[Gemini SW] Hardcoded chat fallbacks exhausted. Running self-healing catalog check...');
+        try {
+          const fallbackModel = await resolveBestAvailableModel(apiKey);
+          if (fallbackModel && fallbackModel !== modelName) {
+            console.log(`[Gemini SW] Catalog chat resolution success! Retrying with: ${fallbackModel}`);
+            return await callGeminiChatApi(apiKey, videoContext, chatHistory, newQuestion, languageCode, fallbackModel, 1);
+          }
+        } catch (fallbackErr) {
+          console.error('[Gemini SW] Catalog chat self-healing failed:', fallbackErr);
+        }
       }
     }
     throw err;
