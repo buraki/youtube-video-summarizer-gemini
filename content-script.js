@@ -411,7 +411,7 @@
                 <svg class="icon-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
-                Videoya Soru Sor
+                <span id="gemini-qa-header-text">Videoya Soru Sor</span>
               </h4>
               
               <!-- Q&A Thread Container -->
@@ -1043,21 +1043,35 @@
       .replace(/'/g, '&#039;');
   }
 
-  // Updates the placeholder text of the Q&A input box based on selected language
+  // Updates the placeholder text and header of the Q&A input box based on selected language
   function updateQaInputPlaceholder() {
     const qaInput = document.getElementById('gemini-qa-input');
-    if (!qaInput) return;
+    const qaHeaderText = document.getElementById('gemini-qa-header-text');
     
-    const placeholders = {
-      en: "Ask a question about this video...",
-      tr: "Bu video hakkında bir soru sorun...",
-      es: "Haz una pregunta sobre este video...",
-      de: "Stellen Sie eine Frage zu diesem Video...",
-      fr: "Posez une question sur cette vidéo...",
-      ru: "Задайте вопрос об этом видео...",
-      pt: "Faça uma pergunta sobre este vídeo..."
-    };
+    if (qaInput) {
+      const placeholders = {
+        en: "Ask a question about this video...",
+        tr: "Bu video hakkında bir soru sorun...",
+        es: "Haz una pregunta sobre este video...",
+        de: "Stellen Sie eine Frage zu diesem Video...",
+        fr: "Posez une question sur cette vidéo...",
+        ru: "Задайте вопрос об этом видео...",
+        pt: "Faça uma pergunta sobre este vídeo..."
+      };
+      qaInput.placeholder = placeholders[currentLanguage] || placeholders.en;
+    }
     
-    qaInput.placeholder = placeholders[currentLanguage] || placeholders.en;
+    if (qaHeaderText) {
+      const headers = {
+        en: "Ask a Question",
+        tr: "Videoya Soru Sor",
+        es: "Preguntar al Video",
+        de: "Frage zum Video stellen",
+        fr: "Poser une question",
+        ru: "Задать вопрос по видео",
+        pt: "Fazer uma pergunta"
+      };
+      qaHeaderText.textContent = headers[currentLanguage] || headers.en;
+    }
   }
 })();
