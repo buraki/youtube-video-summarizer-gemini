@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Verifies the API Key by making a simple request to list Gemini models
   async function verifyApiKey(key) {
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${key}`);
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
       return response.ok;
     } catch (err) {
       console.error('API key verification fetch error:', err);

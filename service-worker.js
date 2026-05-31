@@ -121,7 +121,7 @@ Provide a powerful, 1-2 sentence concluding synthesis of the video's overall mes
 // Make the fetch call to Gemini API with dynamic self-healing fallback support
 async function callGeminiApi(apiKey, prompt, modelOverride = null) {
   const modelName = modelOverride || 'models/gemini-1.5-flash';
-  const endpoint = `https://generativelanguage.googleapis.com/v1/${modelName}:generateContent?key=${apiKey}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${apiKey}`;
   
   console.log(`[Gemini SW] Initiating generateContent with target model: ${modelName}`);
   
@@ -196,7 +196,7 @@ async function callGeminiApi(apiKey, prompt, modelOverride = null) {
 
 // Queries the model catalog using the user's API Key and resolves the best available model name
 async function resolveBestAvailableModel(apiKey) {
-  const catalogUrl = `https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`;
+  const catalogUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
   const response = await fetch(catalogUrl);
   if (!response.ok) {
     throw new Error(`Failed to list available models. Status: ${response.status}`);
@@ -235,7 +235,7 @@ async function resolveBestAvailableModel(apiKey) {
 // Make the fetch call to Gemini API for a chat turn with full context and history
 async function callGeminiChatApi(apiKey, videoContext, chatHistory, newQuestion, languageCode, modelOverride = null) {
   const modelName = modelOverride || 'models/gemini-1.5-flash';
-  const endpoint = `https://generativelanguage.googleapis.com/v1/${modelName}:generateContent?key=${apiKey}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${apiKey}`;
   
   const targetLanguage = getLanguageName(languageCode);
   
