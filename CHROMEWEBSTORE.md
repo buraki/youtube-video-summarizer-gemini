@@ -11,6 +11,8 @@ Gemini YouTube Video Summarizer
 Summarize YouTube videos in seconds using Gemini 1.5 Flash. Fully integrated into YouTube's native 3-dots menus.
 
 **Detailed Description**
+⚠️ **IMPORTANT NOTE:** To use this extension, you must provide your own Google Gemini API Key. You can get a free key from Google AI Studio in less than a minute. The extension runs entirely on your local browser and connects directly to Google's official API, keeping your keys and data 100% private and secure.
+
 Summarize any YouTube video in seconds without leaving your current page! Powered by Google's Gemini 1.5 Flash model, the Gemini YouTube Video Summarizer lets you grasp key insights, takeaways, and outlines from video transcripts instantaneously.
 
 Perfect for students, researchers, professionals, and busy learners who want to pre-screen video content or review core arguments in a fraction of the time.
@@ -132,3 +134,31 @@ https://github.com/developer/gemini-youtube-summarizer
 ### Known Issues / Limitations
 - Short-form content (YouTube Shorts) are supported, but summary length is naturally constrained by the short duration of the video.
 - Auto-generated captions are supported, but translation quality corresponds to YouTube's caption transcript fidelity.
+
+---
+
+## Tester Instructions (Submit to Chrome Web Store Console)
+
+> [!IMPORTANT]
+> When submitting your extension in the Chrome Web Store Developer Console, paste the following instructions in the **"Tester instructions"** text box under the **"Privacy practices"** or **"Store listing"** section.
+> You **MUST** provide a temporary, valid Gemini API Key inside the instructions so the reviewer can test the extension successfully without having to create their own key.
+
+### Tester Instructions Text to Copy:
+```text
+TESTER INSTRUCTIONS:
+This extension is a client-side utility that summarizes YouTube videos using Google's Gemini API. It requires a Gemini API Key to function. 
+
+Please use the following active, pre-configured Gemini API Key to test all features of the extension during your review:
+API KEY: [PASTE_A_VALID_API_KEY_HERE]
+
+STEPS TO TEST & REPRODUCE:
+1. Install the extension.
+2. Click on the extension's toolbar icon to open the configuration popup.
+3. Paste the Gemini API Key provided above into the "Gemini API Key" input field.
+4. Click the "Save API Key" button (it will display a green checkmark indicating the key is validated and saved).
+5. Open any watchable YouTube video with English captions/transcripts (e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ).
+6. Click the native YouTube 3-dots menu icon below the video player (next to Share/Download buttons) or on any video thumbnail card.
+7. Click the "Summarize with Gemini" option (marked with a blue sparkle icon).
+8. A beautiful glassmorphic sidebar panel will slide in from the right and successfully generate a complete, structured summary using Gemini 1.5 Flash.
+9. Type a question in the "Ask a question..." chatbox at the bottom of the sidebar (e.g., "What is the main topic?") and click Send to test the interactive Q&A dialogue.
+```
